@@ -1,30 +1,44 @@
 const express = require('express'); 
 const morgan = require('morgan'); 
-const authRoutes = require('./routes/authRoutes');  
 const authMiddleware = require('./middleware/authMiddleware');
 const cors = require('cors');
+const userRoutes = require('./routes/userRoutes');
+const dotenv = require('dotenv');
 
-require('dotenv').config();
+//Dotenv
+dotenv.config();
+
+//database connection
 require('./libs/dbConnect');
 
+//rest objects
 const app = express();
 
+//middlewares
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors());
 
-app.use('/api/auth', authRoutes);
+//routes
+app.use('/api/v1/user', require('./routes/userRoutes'));
+app.use('/api/v1/tasks', require('./routes/taskRoutes'));
+app.use('/api/v1/equipment', require('./routes/equipmentRoutes'));
+app.use('/api/v1/project', require('./routes/projectRoutes'));
+app.use('/api/v1/sanction', require('./routes/sanctionRoutes'));
 
-app.get('/api/protected', authMiddleware, (req, res) => {
-    res.json({ message: 'This is a protected route', user: req.user });
+//routes
+app.get('/', (req, res) => {
+  res.status(200).json({message: 'Welcome to the Chantier Backend API'});
 });
 
 app.get('*', (req, res) => {
     res.status(404).render('index', { message: 'Not Found' });
 });
 
-const PORT = 3000
+//Port
+const PORT = process.env.PORT || 3000;
 
+//listen
 app.listen(PORT, () => { 
-    console.log('Server is running on port 3000');
+    console.log(`Server is running on port: ${PORT}`.bgGreen.white);
 });
